@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apresentação Borelli Advocacia</title>
+<meta name="description" content="Esqueleto de apresentação da Borelli Advocacia no sistema Grifo Nosso v1: dez tipos de slide em 1440 × 900, com navegação por teclado e toque, notas do apresentador e exportação em PDF.">
+<meta name="theme-color" content="#172B3D">
+<link rel="icon" type="image/svg+xml" href="assets/borelli-favicon.svg">
+<link rel="apple-touch-icon" href="assets/borelli-favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Lexend:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!--
+  APRESENTAÇÃO BORELLI ADVOCACIA · esqueleto de deck · sistema Grifo Nosso v1
+
+  COMO USAR ESTE ESQUELETO
+  1. Duplique este arquivo na mesma pasta de bviz.js, bforms.js e assets/
+     (os caminhos são relativos). Abra no navegador: cada slide é um palco
+     de 1440 × 900 escalado para caber na janela.
+  2. Cada slide é uma <section class="slide TIPO campo-noite|campo-papel">.
+     Os dez tipos prontos: capa, capa-clara, secao, ideia, stat, grafico,
+     compara, citacao, passos e closer. Para um slide novo, copie a seção do
+     mesmo tipo, troque o texto e mantenha as classes (s-folio, s-rotulo,
+     s-titulo, s-apoio, s-rodape, s-num). O campo manda na cor: o mesmo
+     componente sai ouro no Azul Noite e Azul Borelli no Papel, sem ajuste.
+  3. Use UMA das duas capas: a Azul Noite para palestra, aula e evento; a
+     clara para a conversa de acompanhamento com quem já é cliente. Apague a
+     outra e, com a capa clara, troque também o título do closer (a nota do
+     slide 10 diz como).
+  4. As notas do apresentador ficam no <aside class="notas"> de cada slide.
+     A tecla P abre o painel com a nota do slide atual.
+  5. Gráficos: declare os dados no atributo data-bviz (motor bviz.js) e o
+     motor monta sozinho. Formas: atributo data-bforms (motor bforms.js).
+     Número de norma só entra conferido no texto oficial, com fonte e data
+     na própria tela; dado sem fonte oficial leva "Dado ilustrativo".
+  6. Nunca apague o closer: é ele que leva os canais oficiais e a
+     identificação da sociedade quando o PDF sai do evento (WhatsApp,
+     e-mail, impresso).
+
+  REGRAS DO SLIDE (Grifo Nosso)
+  Título em frase (caixa normal), com UM grifo: a palavra ou expressão que
+  decide, marcada com <em> (sublinhado dourado no azul, marca-texto no
+  claro; nunca itálico). Uma linha de apoio; zero parágrafo; um visual por
+  slide. O metal (degradê) vive só no arquivo da marca: a capa e o closer
+  levam a assinatura em ouro metálico e por isso não repetem o símbolo no
+  rodapé. O numeral de seção é ouro chapado no azul e Azul Borelli no claro,
+  nunca metal. Ouro nunca é texto sobre o Papel. A trama de losangos só
+  entra em campo azul, uma por slide, nunca atrás de texto pequeno. A marca
+  é sempre o arquivo de assets/ (reconstrução vetorial · aguarda o arquivo
+  original do designer). Fotos reais, sem banco de imagem, sem imagem
+  gerada por inteligência artificial, sem cliente.
+  Publicidade da advocacia (leitura conservadora do Provimento 205/2021 e
+  do Código de Ética da OAB): informar, nunca oferecer; nenhuma promessa,
+  nenhum superlativo, nenhum número de processos, de clientes ou de êxito,
+  nenhum caso, depoimento ou print de decisão, nenhum preço ou gratuidade.
+  A identificação da sociedade sai em 26 px no closer, o piso da casa para
+  o bloco da OAB: nunca reduza, porque o PDF também é lido no celular. Registro da sociedade, WhatsApp oficial e OAB de
+  quem ainda não confirmou ficam entre colchetes.
+
+  NAVEGAÇÃO
+  Setas, PageUp, PageDown, espaço, Home e End. Clique: terço esquerdo volta,
+  o resto avança. Toque: deslize para os lados. P: notas. F: tela cheia.
+  O número do slide fica no endereço (#3 abre o terceiro). No celular (em
+  pé ou deitado) os slides empilham e a página rola.
+
+  PDF: python3 exportar_pdf.py deck-template.html (Playwright, uma página de
+  1440 × 900 por slide). No Chrome: Cmd+P, layout Paisagem, margens
+  "Nenhuma", gráficos de segundo plano ligado. Para enviar sozinho:
+  python3 autocontido.py deck-template.html (grava dist/apresentacao-borelli.html
+  com imagens, motores e fontes embutidos).
+-->
+<script>
+/* Marca a página como "com JavaScript" antes de pintar: só assim o modo palco (slides escalados) liga.
+   Sem JavaScript, os slides aparecem empilhados e inteiros. */
+document.documentElement.classList.add('js');
+</script>
+<style>
+/* =====================================================================
+   GRIFO NOSSO v1 · apresentação da Borelli Advocacia
+   Ordem: tokens (os mesmos do brand-book.html), campos, reset, tipografia
+   de palco, componentes, estrutura do slide, os dez tipos, posição no
+   palco de 1440 × 900, interface (progresso, contador, notas), modo palco,
+   celular, impressão. Uma única tag de estilo; só as cores do :root;
+   superfície chapada (sem sombra decorativa, vidro ou brilho); canto reto.
+   ===================================================================== */
+
+/* ---------- 1. Tokens (bloco canônico do brand-book.html) ---------- */
+:root{
+  color-scheme: light;
+
+  /* Da marca, medidos nos arquivos do escritório */
+  --marinho:#244460;      /* Azul Borelli: a cor do logotipo; ênfase, numeral e botão no claro */
+  --ouro:#C9A24D;         /* Ouro Borelli: linha, rótulo, numeral e grifo sobre azul */
+  --metal:linear-gradient(90deg,#A88545 0%,#D7B970 28%,#ECD282 52%,#CCAB60 74%,#AA8542 100%);  /* só dentro da marca */
+
+  /* Campos */
+  --noite:#172B3D;        /* Azul Noite: o campo escuro */
+  --papel:#F7F9FB;        /* Papel: o campo de leitura */
+  --nevoa:#E1ECF5;        /* Névoa: painel e passe-partout claros */
+  --abismo:#0F1D2A;       /* Abismo: o fundo do palco */
+  --mare:#1E354B;         /* Maré: painel sobre Noite */
+  --branco:#FFFFFF;
+
+  /* Texto e apoio */
+  --gelo:#DCE6EF;         /* texto sobre Noite (11,5:1) */
+  --bruma:#AEBCCB;        /* apoio sobre Noite (7,5:1) */
+  --grafite:#3F4A56;      /* texto sobre Papel (8,6:1) */
+  --pedra:#5B6875;        /* apoio sobre Papel (5,4:1) */
+  --champanhe:#EBD081;    /* o ouro sobre Marinho */
+  --bronze:#7A5A1E;       /* o dourado como texto no claro (raro) */
+  --grifo:#FFE9A8;        /* o marca-texto do grifo no claro */
+
+  /* Linhas */
+  --linha-clara:#DFE7EE;
+  --linha-escura:#2A4057;
+
+  /* Famílias */
+  --display:"Newsreader","Source Serif 4",Georgia,"Times New Roman",serif;
+  --citacao:"Newsreader","Source Serif 4",Georgia,"Times New Roman",serif;   /* itálico: só citação e latim */
+  --texto:"Lexend","Inter",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+
+  /* Espaço: escala de 4 */
+  --e-1:4px; --e-2:8px; --e-3:12px; --e-4:16px; --e-5:24px;
+  --e-6:32px; --e-7:48px; --e-8:64px; --e-9:96px; --e-10:128px;
+
+  --colunas:12;
+  --calha:24px;
+  --gut:64px;
+  --track:.16em;          /* rótulo: eco do ADVOCACIA ESPECIALIZADA */
+
+  /* Ícones Lucide usados como máscara (a cor vem de background-color) */
+  --ic-check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  --ic-x:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E");
+  /* O avanço: o chevron do símbolo (45°) é a seta da casa */
+  --ic-seta:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+
+  /* A trama: malha de losangos e chevrons do símbolo, em linha de 1 px (textura de campo azul) */
+  --trama:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80' fill='none' stroke='%23C9A24D' stroke-opacity='.16' stroke-width='1'%3E%3Cpath d='M0 40 40 0 80 40 40 80z'/%3E%3Cpath d='M20 40 40 20 60 40 40 60z'/%3E%3C/svg%3E");
+
+  /* Escala do SLIDE (palco de 1440 × 900). Newsreader a partir de 36; Lexend em
+     cinco corpos: 26 · 22 · 17 · 15 · 14. A identificação da sociedade no
+     closer usa o corpo de 26, o piso da casa para o bloco da OAB. Nada abaixo de 14. */
+  --s-display:104px;   /* capa: até 3 linhas */
+  --s-secao:80px;      /* título da abertura de seção */
+  --s-frase:88px;      /* ideia única */
+  --s-capa:72px;       /* título da capa clara */
+  --s-titulo:60px;     /* título do miolo: até 2 linhas */
+  --s-sub:36px;        /* título de cartão e de etapa */
+  --s-chamada:26px;    /* linha de apoio */
+  --s-texto:22px;      /* texto de cartão e de etapa */
+  --s-legenda:17px;    /* fonte, legenda, contato */
+  --s-rotulo:15px;     /* rótulo em caixa alta, .16em */
+  --s-folio:14px;      /* fólio, rodapé, contador */
+  --s-id:26px;         /* identificação da OAB: o piso de 26 px da casa, nunca menos */
+  --s-margem:96px;     /* margem lateral; grade de 12 colunas de 82 px com calha de 24 */
+}
+@media (max-width:1024px){ :root{ --gut:32px; } }
+@media (max-width:640px){ :root{ --gut:20px; } }
+@media (max-width:380px){ :root{ --gut:16px; } }
+
+/* ---------- 2. Campos: a cor de tudo sai do campo onde o elemento está ---------- */
+:root,.campo-papel,.campo-branco,.campo-nevoa{
+  --f-fundo:var(--papel); --f-titulo:var(--noite); --f-texto:var(--grafite); --f-apoio:var(--pedra);
+  --f-enfase:var(--marinho); --f-rotulo:var(--marinho); --f-link:var(--marinho); --f-losango:var(--marinho);
+  --f-linha:var(--linha-clara); --f-linha-destaque:var(--marinho); --f-painel:var(--nevoa);
+  --f-num-cor:var(--marinho); --f-btn-linha:var(--noite);
+  --f-cta-bg:var(--marinho); --f-cta-fg:var(--branco); --f-cta-hover:var(--noite);
+  /* o grifo no claro: marca-texto atrás da metade de baixo da palavra */
+  --f-grifo-bg:linear-gradient(transparent 56%,var(--grifo) 56%,var(--grifo) 92%,transparent 92%);
+  --f-grifo-linha:transparent;
+  /* séries de gráfico (bviz.js): o destaque é o Azul Borelli; as outras são neutras */
+  --dado-destaque:var(--marinho); --dado-1:#6F8BA6; --dado-2:var(--pedra); --dado-3:#B7C6D4; --dado-4:var(--linha-clara);
+}
+.campo-branco{ --f-fundo:var(--branco); --f-painel:var(--papel); }
+.campo-nevoa{ --f-fundo:var(--nevoa); --f-painel:var(--papel); --f-apoio:#56626F; }
+.campo-noite,.campo-mare,.campo-marinho,.campo-abismo{
+  --f-fundo:var(--noite); --f-titulo:var(--branco); --f-texto:var(--gelo);
+  --f-apoio:var(--bruma); --f-enfase:var(--ouro); --f-rotulo:var(--ouro); --f-link:var(--champanhe); --f-losango:var(--ouro);
+  --f-linha:var(--linha-escura); --f-linha-destaque:var(--ouro); --f-painel:var(--mare);
+  --f-num-cor:var(--ouro); --f-btn-linha:var(--ouro);
+  --f-cta-bg:var(--ouro); --f-cta-fg:var(--noite); --f-cta-hover:var(--champanhe);
+  /* o grifo no azul: sublinhado dourado */
+  --f-grifo-bg:none; --f-grifo-linha:var(--ouro);
+  --dado-destaque:var(--ouro); --dado-1:var(--champanhe); --dado-2:var(--bruma); --dado-3:#4C6680; --dado-4:var(--linha-escura);
+}
+.campo-mare{ --f-fundo:var(--mare); --f-painel:var(--noite); }
+.campo-abismo{ --f-fundo:var(--abismo); --f-painel:var(--noite); }
+/* No Marinho o ouro puro fica em 4,2:1: rótulo, ênfase e numeral passam para o champanhe */
+.campo-marinho{
+  --f-fundo:var(--marinho); --f-painel:var(--noite); --f-apoio:#C2CFDC;
+  --f-enfase:var(--champanhe); --f-rotulo:var(--champanhe); --f-losango:var(--champanhe); --f-num-cor:var(--champanhe);
+  --f-linha:#3A5875; --f-linha-destaque:var(--champanhe); --f-grifo-linha:var(--champanhe);
+  --f-cta-bg:var(--champanhe); --f-cta-fg:var(--noite); --f-cta-hover:var(--branco);
+}
+.campo-noite,.campo-mare,.campo-marinho,.campo-abismo,.campo-papel,.campo-branco,.campo-nevoa{ background:var(--f-fundo); color:var(--f-texto); }
+
+/* ---------- 3. Reset ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+body{
+  margin:0; background:var(--abismo); color:var(--grafite);
+  font-family:var(--texto); font-size:18px; line-height:1.6; font-weight:300;
+  font-variant-numeric:lining-nums; font-synthesis:none;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; text-rendering:optimizeLegibility;
+}
+h1,h2,h3,p,ul,ol,li,figure,blockquote,dl,dd,dt{ margin:0; padding:0; }
+ul,ol{ list-style:none; }
+img,svg{ display:block; max-width:100%; }
+img{ height:auto; }
+strong,b{ font-weight:600; }
+p,li,dd,dt,a,figcaption{ overflow-wrap:anywhere; }
+a{ color:var(--f-link); text-decoration-thickness:1px; text-underline-offset:.22em; }
+::selection{ background:var(--ouro); color:var(--noite); }
+:focus-visible{ outline:2px solid var(--f-enfase); outline-offset:3px; }
+.visualmente-oculto{ position:absolute!important; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0; }
+.ic{ width:24px; height:24px; flex:none; stroke-width:1.5; }
+.nw{ white-space:nowrap; }   /* OAB/CE e o número nunca se separam */
+
+/* ---------- 4. Tipografia de palco ---------- */
+.s-display,.s-titulo,.s-frase,.secao-titulo,.stat-conclusao,.etapa-t,.compara-t{
+  font-family:var(--display); font-weight:500; color:var(--f-titulo); font-optical-sizing:auto;
+  overflow-wrap:normal; word-break:normal; hyphens:none; text-wrap:balance;
+}
+.s-display{ font-size:var(--s-display); line-height:1.02; letter-spacing:-.018em; }
+.s-titulo{ font-size:var(--s-titulo); line-height:1.06; letter-spacing:-.012em; }
+
+/* O GRIFO: a palavra (ou expressão curta) que decide, uma por título. Dentro do título, <em>
+   não fica em itálico: no Papel vira marca-texto atrás da metade de baixo da palavra; no azul,
+   sublinhado dourado fino abaixo da linha de base. */
+:is(.s-display,.s-titulo,.s-frase,.secao-titulo,.stat-conclusao,.etapa-t,.compara-t) :is(em,.enf){
+  font-style:normal; font-weight:inherit; color:inherit; letter-spacing:inherit;
+  background-image:var(--f-grifo-bg); background-repeat:no-repeat;
+  -webkit-box-decoration-break:clone; box-decoration-break:clone; padding:0 .06em; margin:0 -.03em;
+  text-decoration-line:underline; text-decoration-color:var(--f-grifo-linha);
+  text-decoration-thickness:max(2px,.07em); text-underline-offset:.16em; text-decoration-skip-ink:none;
+}
+em,i{ font-style:normal; }
+:is(p,li,dd) em{ font-weight:500; color:var(--f-titulo); }
+
+.s-rotulo{
+  display:flex; align-items:center; gap:14px;
+  font:500 var(--s-rotulo)/1.4 var(--texto); letter-spacing:var(--track); text-transform:uppercase; color:var(--f-rotulo);
+}
+.s-rotulo--apoio{ color:var(--f-apoio); }
+.s-apoio{ font-family:var(--texto); font-weight:300; font-size:var(--s-chamada); line-height:1.5; color:var(--f-texto); max-width:30em; text-wrap:pretty; }
+.s-legenda{ font-size:var(--s-legenda); line-height:1.5; font-weight:400; color:var(--f-apoio); text-wrap:pretty; }
+.s-legenda b{ font:500 var(--s-folio)/1.4 var(--texto); letter-spacing:var(--track); text-transform:uppercase; color:var(--f-titulo); margin-right:12px; }
+/* O losango: marcador derivado do símbolo. Contorno por padrão; cheio para a UMA informação principal */
+.losango{ display:inline-block; width:9px; height:9px; transform:rotate(45deg); border:1.5px solid var(--f-losango); background:transparent; flex:none; }
+.losango--cheio{ background:var(--f-losango); }
+
+/* ---------- 5. Componentes usados no deck (iguais ao brand book, na escala do palco) ---------- */
+/* Botão: a cor sai do campo (ouro com texto Noite no azul; Azul Borelli com texto branco no claro) */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:14px; min-height:64px; padding:18px 36px 17px;
+  border:1px solid transparent; border-radius:0; font:500 var(--s-rotulo)/1.3 var(--texto); letter-spacing:.12em; text-transform:uppercase;
+  text-decoration:none; text-align:center; white-space:normal; cursor:pointer; transition:background-color .15s ease,border-color .15s ease;
+}
+.btn--cheio{ background:var(--f-cta-bg); color:var(--f-cta-fg); border-color:var(--f-cta-bg); }
+.btn--cheio:hover{ background:var(--f-cta-hover); border-color:var(--f-cta-hover); color:var(--f-cta-fg); }
+.btn--linha{ background:transparent; color:var(--f-titulo); border-color:var(--f-btn-linha); }
+.btn--avanco::after{ content:""; width:20px; height:20px; flex:none; background:currentColor; -webkit-mask:var(--ic-seta) center/contain no-repeat; mask:var(--ic-seta) center/contain no-repeat; }
+
+/* Identificação da OAB: mesma fonte, mesmo tamanho e mesma cor em todos os itens */
+.s-id{ display:block; font:400 var(--s-legenda)/1.6 var(--texto); letter-spacing:.01em; color:var(--f-texto); }
+.s-id > span + span::before{ content:"\00a0· "; }   /* o ponto fica no fim da linha, nunca abre a linha seguinte */
+.s-id--linhas > span{ display:block; }
+.s-id--linhas > span + span::before{ content:none; }
+
+/* Ficha de dados em linha (capa, closer) */
+.s-meta{ display:grid; grid-template-columns:repeat(3,minmax(0,max-content)); border-top:1px solid var(--f-linha); }
+.s-meta > div{ padding:16px 32px 0 0; min-width:0; }
+.s-meta > div + div{ padding-left:32px; border-left:1px solid var(--f-linha); }
+.s-meta dt{ font:500 var(--s-folio)/1.4 var(--texto); letter-spacing:var(--track); text-transform:uppercase; color:var(--f-apoio); }
+.s-meta dd{ margin-top:6px; font:500 var(--s-legenda)/1.45 var(--texto); color:var(--f-titulo); }
+.s-meta > .s-meta-linha{ grid-column:1 / -1; margin-top:16px; padding-left:0; border-left:0; border-top:1px solid var(--f-linha); }
+.s-meta dd.s-id{ letter-spacing:.01em; }
+
+/* Prancha de foto: foto real com o passe-partout (ou na janela) e a legenda */
+.s-prancha{ margin:0; display:flex; flex-direction:column; min-width:0; }
+.s-prancha-foto{ --passe:0px; position:relative; overflow:hidden; background:var(--f-painel); min-height:0; }
+.s-prancha-foto > img{ position:absolute; top:var(--passe); left:var(--passe); width:calc(100% - 2 * var(--passe)); height:calc(100% - 2 * var(--passe)); max-width:none; object-fit:cover; object-position:var(--foco,50% 50%); }
+.s-prancha > figcaption{ margin-top:16px; }
+/* com passe-partout: linha de destaque em cima e o painel em volta da foto */
+.s-prancha--passe{ border-top:1px solid var(--f-linha-destaque); padding-top:24px; }
+.s-prancha--passe .s-prancha-foto{ --passe:24px; }
+/* janela: a foto dentro da linha fina, a 12 px da imagem, com o losango num canto */
+.s-prancha--janela .s-prancha-foto{ --passe:12px; overflow:visible; background:transparent; border:1px solid var(--f-linha-destaque); }
+.s-prancha--janela .s-prancha-foto::after{ content:""; position:absolute; left:-6px; top:-6px; width:11px; height:11px; transform:rotate(45deg); background:var(--f-losango); }
+
+/* Formas (bforms.js) e gráfico (bviz.js) */
+.forma-svg{ display:grid; place-items:center; min-width:0; }
+.forma-svg svg{ width:100%; height:auto; }
+.grafico-svg{ min-width:0; }
+.grafico-svg svg{ width:100%; height:auto; }
+
+/* ---------- 6. Estrutura do slide ---------- */
+.deck{ position:relative; }
+.slide{ position:relative; overflow:hidden; isolation:isolate; }
+aside.notas{ display:none; }
+
+/* Fólio de manual: rótulo à esquerda, parte à direita, linha embaixo (ouro no azul, linha clara no Papel) */
+.s-folio{
+  display:flex; justify-content:space-between; align-items:baseline; gap:24px;
+  padding-bottom:14px; border-bottom:1px solid var(--f-linha-destaque);
+  font:500 var(--s-folio)/1.4 var(--texto); letter-spacing:var(--track); text-transform:uppercase; color:var(--f-apoio);
+}
+:is(.campo-papel,.campo-nevoa,.campo-branco) > .s-folio{ border-bottom-color:var(--f-linha); }
+.s-folio > span:first-child{ min-width:0; }
+.s-folio > span:last-child{ flex:none; }
+.s-folio > span:first-child b{ font-weight:500; color:var(--f-titulo); }
+.s-folio > span:last-child b{ font-weight:500; color:var(--f-rotulo); }
+
+.s-rodape{ display:flex; align-items:center; justify-content:space-between; gap:24px; }
+.s-simbolo{ width:40px; height:auto; }
+.s-num{ font:500 var(--s-folio)/1 var(--texto); letter-spacing:.14em; color:var(--f-apoio); font-variant-numeric:tabular-nums; }
+.s-cab .s-titulo{ margin-top:20px; max-width:1100px; }
+.s-cab .s-apoio{ margin-top:18px; }
+
+/* A trama: a malha de losangos do símbolo, só em campo azul, nunca atrás de texto pequeno */
+.s-trama{ position:absolute; z-index:-1; pointer-events:none; background-image:var(--trama); background-size:80px 80px; }
+:is(.campo-papel,.campo-nevoa,.campo-branco) > .s-trama{ display:none; }   /* no claro, a trama não existe */
+
+/* ---------- 7. Os dez tipos (tipografia e cor; a posição no palco fica no bloco 8) ---------- */
+/* 1 · Capa Azul Noite: assinatura em ouro metálico (o único metal), foto real à direita, linha de ouro no meio da calha */
+.slide.capa .s-marca{ width:560px; height:auto; max-width:none; }
+.capa-titulos .s-display{ margin-top:22px; }
+.capa-titulos .s-apoio{ margin-top:22px; max-width:26em; }
+.capa-titulos .s-meta{ margin-top:32px; }
+.capa-fio{ display:block; width:1px; background:var(--ouro); }
+.capa .s-prancha > figcaption b{ color:var(--f-apoio); }
+
+/* 2 · Capa clara: assinatura Azul Borelli, título com o grifo em marca-texto, retrato com passe-partout Névoa */
+.capa-clara .s-marca{ width:460px; height:auto; max-width:none; }
+.capa-clara .s-titulo{ font-size:var(--s-capa); line-height:1.04; margin-top:22px; }
+.capa-clara .capa-titulos .s-apoio{ margin-top:22px; max-width:24em; }
+.capa-clara .s-meta{ margin-top:30px; grid-template-columns:max-content max-content minmax(0,1fr); }   /* a terceira coluna leva a linha do advogado até a margem */
+
+/* 3 · Abertura de seção: numeral em Newsreader, ouro chapado no azul (Azul Borelli no claro), nunca metal */
+.secao-num{
+  display:inline-block; font-family:var(--display); font-weight:500; font-size:400px; line-height:.8; letter-spacing:-.04em;
+  padding:.06em .02em .04em 0; color:var(--f-num-cor); font-variant-numeric:lining-nums; font-optical-sizing:auto;
+}
+.foto--natural{ filter:saturate(.88) contrast(1.03); }   /* tira o excesso de cor da luz do evento (receita da seção 09 do brand book) */
+.secao-kicker{ display:flex; align-items:center; gap:14px; font:500 var(--s-rotulo)/1.4 var(--texto); letter-spacing:var(--track); text-transform:uppercase; color:var(--f-apoio); }
+.secao-kicker::before{ content:""; width:40px; height:1px; flex:none; background:var(--f-rotulo); }
+.secao-titulo{ margin-top:22px; font-size:var(--s-secao); line-height:1.04; letter-spacing:-.016em; }
+.secao-texto .s-apoio{ margin-top:26px; max-width:24em; color:var(--f-apoio); }
+.secao .s-trama{
+  -webkit-mask-image:radial-gradient(120% 110% at 100% 0%,#000 0%,rgba(0,0,0,.55) 42%,transparent 78%);
+          mask-image:radial-gradient(120% 110% at 100% 0%,#000 0%,rgba(0,0,0,.55) 42%,transparent 78%);
+}
+
+/* 4 · Ideia única: uma frase, uma forma */
+.s-frase{ font-size:var(--s-frase); line-height:1.04; letter-spacing:-.016em; max-width:12.5em; }
+.ideia-frase .s-apoio{ margin-top:36px; max-width:27em; }
+.ideia-frase .s-legenda{ margin-top:24px; }
+
+/* 5 · Estatística: um número da norma em Newsreader, com fonte e data na própria tela */
+.stat-num{ display:flex; align-items:baseline; font-family:var(--display); font-weight:500; font-size:300px; line-height:.86; letter-spacing:-.03em; color:var(--f-titulo); font-variant-numeric:lining-nums; white-space:nowrap; overflow-wrap:normal; font-optical-sizing:auto; }
+.stat-un{ font-size:.24em; letter-spacing:-.005em; margin-left:.14em; color:var(--f-enfase); }
+.stat-desc{ font-size:var(--s-chamada); line-height:1.5; color:var(--f-texto); max-width:20em; text-wrap:balance; }
+.stat-conclusao{ margin-top:30px; padding-top:30px; border-top:1px solid var(--f-linha-destaque); font-size:var(--s-sub); line-height:1.18; text-wrap:wrap; }
+
+/* 6 · Gráfico: o título é a conclusão; um destaque; fonte embaixo */
+.grafico-lado{ border-left:1px solid var(--f-linha); padding-left:32px; }
+.grafico-lado .s-apoio{ font-size:var(--s-texto); line-height:1.45; }
+.grafico-lado .s-legenda{ margin-top:22px; }
+
+/* 7 · Assim / Não assim de documento (nunca de pessoa): o que não serve à esquerda, o certo no campo azul */
+.compara-lado{ min-width:0; padding:40px 44px 44px; }
+.compara-nao{ border:1px solid var(--f-linha); }
+.compara-veredito{ gap:12px; }
+.compara-veredito::before{ content:""; width:20px; height:20px; flex:none; background:currentColor; -webkit-mask:var(--ic-check) center/contain no-repeat; mask:var(--ic-check) center/contain no-repeat; }
+.compara-nao .compara-veredito::before{ -webkit-mask-image:var(--ic-x); mask-image:var(--ic-x); }
+.compara-t{ margin-top:14px; font-size:var(--s-sub); line-height:1.1; }
+.compara-lista{ margin-top:28px; display:grid; }
+.compara-lista li{ display:grid; grid-template-columns:28px minmax(0,1fr); gap:18px; align-items:start; padding:18px 0; border-top:1px solid var(--f-linha); font-size:var(--s-texto); line-height:1.4; font-weight:300; color:var(--f-texto); text-wrap:pretty; }
+.compara-nao .compara-lista li::before{ content:""; justify-self:start; width:9px; height:9px; margin:.56em 0 0 6px; transform:rotate(45deg); border:1.5px solid var(--f-apoio); }   /* losango de contorno */
+.compara-sim .compara-lista li::before{ content:""; margin-top:.04em; width:28px; height:28px; background:var(--f-enfase); -webkit-mask:var(--ic-check) center/contain no-repeat; mask:var(--ic-check) center/contain no-repeat; }
+.compara-seta{ align-self:center; justify-self:center; display:grid; place-items:center; width:56px; height:56px; color:var(--f-enfase); }
+.compara-seta .ic{ width:40px; height:40px; }
+
+/* 8 · Citação: olho de revista (Newsreader Italic sobre a linha de ouro), frase real com crédito */
+.olho{ margin:0; border-top:1px solid var(--f-linha-destaque); padding-top:40px; }
+.olho blockquote{ margin:0; }
+.olho blockquote p{ font-family:var(--citacao); font-style:italic; font-weight:400; font-size:56px; line-height:1.14; color:var(--f-titulo); text-wrap:balance; text-indent:-.4em; overflow-wrap:normal; font-optical-sizing:auto; }
+.olho blockquote p::before{ content:"\201C"; }
+.olho blockquote p::after{ content:"\201D"; }
+.olho figcaption{ margin-top:32px; display:flex; align-items:center; gap:14px; font:500 var(--s-rotulo)/1.5 var(--texto); letter-spacing:var(--track); text-transform:uppercase; color:var(--f-rotulo); }
+.olho figcaption::before{ content:""; width:40px; height:1px; background:currentColor; flex:none; }
+.citacao .olho + .s-legenda{ margin-top:18px; max-width:30em; }
+
+/* 9 · Passos: o percurso de um pedido. O losango cheio marca a etapa principal */
+.percurso{ position:relative; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); column-gap:var(--calha); }
+.percurso::before{ content:""; position:absolute; left:8px; right:0; top:103px; height:1px; background:var(--f-linha-destaque); }
+.etapa{ position:relative; min-width:0; padding-right:24px; }
+.etapa-n{ display:block; font-family:var(--display); font-weight:500; font-size:64px; line-height:1; color:var(--f-num-cor); font-variant-numeric:lining-nums; }
+.etapa-marca{ position:relative; z-index:1; display:block; margin:32px 0 0 1px; width:15px; height:15px; transform:rotate(45deg); background:var(--f-fundo); border:1.5px solid var(--f-linha-destaque); }
+.etapa--agora .etapa-marca{ background:var(--f-losango); border-color:var(--f-losango); outline:1px solid var(--f-linha-destaque); outline-offset:5px; }
+.etapa-t{ margin-top:32px; font-size:var(--s-sub); line-height:1.1; }
+.etapa-d{ margin-top:14px; font-size:var(--s-texto); line-height:1.5; font-weight:300; color:var(--f-texto); max-width:19em; text-wrap:pretty; }
+
+/* 10 · Closer: agradecimento, canais oficiais e a identificação da sociedade */
+.closer .s-display{ font-size:96px; max-width:11em; }
+.closer-canais{ margin-top:48px; }
+.canais-rotulo{ gap:12px; }
+.canais-rotulo .ic{ width:22px; height:22px; color:var(--f-enfase); }
+.closer-contatos{ margin-top:14px; grid-template-columns:repeat(4,minmax(0,max-content)); }
+.closer-contatos > div{ padding-right:28px; }
+.closer-contatos > div + div{ padding-left:28px; }
+.closer-contatos dd{ font:400 var(--s-texto)/1.4 var(--texto); color:var(--f-titulo); }
+.closer-golpe{ margin-top:16px; }
+.closer-base{ display:flex; justify-content:space-between; align-items:flex-end; gap:48px; padding-top:28px; border-top:1px solid var(--f-linha); }
+.closer-base .s-marca{ width:260px; height:auto; max-width:none; flex:none; }
+.closer-base .s-id{ min-width:0; }
+.s-aviso{ font:400 var(--s-folio)/1.5 var(--texto); color:var(--f-apoio); }
+
+/* ---------- 8. Posição no palco de 1440 × 900 (tela com mais de 640 px de largura e 500 de altura, e impressão) ----------
+   Grade: margem de 96, 12 colunas de 82 px, calha de 24. Eixo A = coluna 6 (x 626);
+   eixo B = coluna 8 (x 838). Fólio em cima (y 40), conteúdo entre y 124 e y 800,
+   rodapé e contador embaixo (y 824 a 864). */
+@media print, screen and (min-width:641px) and (min-height:501px){
+  .slide{ width:1440px; height:900px; }
+  .s-folio{ position:absolute; left:var(--s-margem); right:var(--s-margem); top:40px; }
+  .s-rodape{ position:absolute; left:var(--s-margem); right:var(--s-margem); bottom:36px; height:40px; }
+  .s-cab{ position:absolute; left:var(--s-margem); right:var(--s-margem); top:124px; }
+
+  /* capas: texto nas colunas 1 a 7, foto a partir do eixo B */
+  .capa-texto{ position:absolute; left:var(--s-margem); top:124px; bottom:100px; width:718px; display:flex; flex-direction:column; align-items:flex-start; }
+  .capa-titulos{ margin-top:auto; width:100%; }
+  .capa-prancha{ position:absolute; left:838px; right:var(--s-margem); top:124px; bottom:100px; justify-content:flex-end; }
+  .capa-prancha .s-prancha-foto{ flex:1 1 auto; }
+  .capa-fio{ position:absolute; left:826px; top:75px; bottom:0; }
+
+  .secao .s-trama{ left:626px; right:0; top:76px; height:300px; }
+  .secao-num{ position:absolute; left:80px; bottom:110px; }
+  .secao-texto{ position:absolute; left:626px; right:var(--s-margem); bottom:180px; }
+
+  .ideia .s-cab{ top:257px; }   /* o rótulo encosta na frase, não no fólio */
+  .ideia-frase{ position:absolute; left:var(--s-margem); top:306px; width:880px; }
+  .ideia-forma{ position:absolute; right:var(--s-margem); top:306px; width:296px; }
+
+  .stat .s-cab{ top:230px; }
+  .stat-miolo{ position:absolute; left:var(--s-margem); right:var(--s-margem); top:172px; bottom:100px; display:grid; grid-template-columns:680px minmax(0,1fr); grid-template-rows:auto auto; column-gap:24px; align-content:center; align-items:end; }
+  .stat-num{ grid-column:1; grid-row:1; }
+  .stat-lado{ grid-column:2; grid-row:1; padding-left:56px; padding-bottom:10px; }
+  .stat-fonte{ grid-column:1 / -1; grid-row:2; margin-top:64px; max-width:56em; }
+
+  .grafico-corpo{ position:absolute; left:var(--s-margem); right:var(--s-margem); top:330px; bottom:100px; display:grid; grid-template-columns:824px minmax(0,1fr); column-gap:var(--calha); align-content:center; align-items:center; }
+
+  .compara-grade{ position:absolute; left:var(--s-margem); right:var(--s-margem); top:292px; display:grid; grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr); align-items:stretch; }
+  .compara-fonte{ position:absolute; left:var(--s-margem); right:var(--s-margem); bottom:100px; }
+
+  .citacao-miolo{ position:absolute; left:var(--s-margem); top:124px; bottom:100px; width:664px; display:flex; flex-direction:column; justify-content:center; }
+  .citacao-prancha{ position:absolute; left:838px; right:var(--s-margem); top:124px; bottom:100px; }
+  .citacao-prancha .s-prancha-foto{ flex:1 1 auto; }
+
+  .passos-visual{ position:absolute; left:var(--s-margem); right:var(--s-margem); top:360px; }
+  .passos-fonte{ position:absolute; left:var(--s-margem); right:var(--s-margem); bottom:100px; }
+
+  .closer-texto{ position:absolute; left:var(--s-margem); right:var(--s-margem); top:124px; }
+  .closer-canais{ position:absolute; left:var(--s-margem); right:var(--s-margem); bottom:276px; margin-top:0; }   /* os canais sentam logo acima da identificação */
+  .closer-base{ position:absolute; left:var(--s-margem); right:var(--s-margem); bottom:100px; }
+  /* identificação da sociedade: 26 px no palco, o piso do bloco de identificação em qualquer peça da casa */
+  .closer-base .s-id{ font-size:var(--s-id); line-height:1.34; }
+}
+
+/* ---------- 9. Interface: progresso, contador, painel de notas ---------- */
+.progresso,.contador,.painel-notas{ display:none; }
+.painel-notas .rotulo-painel{ display:block; font:500 12px/1.4 var(--texto); letter-spacing:var(--track); text-transform:uppercase; color:var(--ouro); }
+.painel-cab{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; padding-bottom:18px; border-bottom:1px solid var(--linha-escura); }
+.painel-num{ font-family:var(--display); font-weight:500; font-size:30px; line-height:1; color:var(--branco); font-variant-numeric:tabular-nums; }
+.painel-num span{ color:var(--bruma); font-size:18px; }
+.painel-tit{ margin-top:22px; font-family:var(--display); font-weight:500; font-size:24px; line-height:1.18; color:var(--branco); }
+.painel-txt{ margin-top:16px; flex:1 1 auto; overflow:auto; font-size:16px; line-height:1.65; font-weight:300; color:var(--gelo); }
+.painel-txt p + p{ margin-top:12px; }
+.painel-prox{ margin-top:16px; padding-top:16px; border-top:1px solid var(--linha-escura); font-size:14px; line-height:1.5; font-weight:400; color:var(--bruma); }
+.painel-prox b{ color:var(--branco); font-weight:500; }
+.painel-teclas{ margin-top:14px; font-size:13px; line-height:1.6; font-weight:400; color:var(--bruma); }
+.painel-teclas kbd{ display:inline-block; min-width:1.9em; padding:0 .45em; border:1px solid var(--linha-escura); border-bottom-width:2px; font:500 12px/1.6 var(--texto); color:var(--ouro); text-align:center; }
+
+/* ---------- 10. Modo palco (tela com mais de 640 × 500 px, com JavaScript) ---------- */
+@media screen and (min-width:641px) and (min-height:501px){
+  html.js,html.js body{ height:100%; }
+  html.js body{ background:var(--abismo); }
+  html.js .palco{ position:fixed; inset:0; overflow:hidden; background:var(--abismo); }
+  html.js.com-notas .deck{ outline:1px solid var(--linha-escura); }   /* com as notas abertas, o slide azul não some no fundo */
+  html.js.com-notas .palco{ right:380px; }
+  html.js .deck{
+    position:absolute; left:50%; top:50%; width:1440px; height:900px;
+    transform:translate(-50%,-50%) scale(var(--k,1)); transform-origin:50% 50%;
+  }
+  html.js .slide{ position:absolute; inset:0; opacity:0; visibility:hidden; transition:opacity .25s ease,visibility 0s linear .25s; }
+  html.js .slide.ativo{ opacity:1; visibility:visible; transition:opacity .25s ease; }
+  html.js .s-num{ visibility:hidden; }
+  html.js .progresso{ display:block; position:absolute; left:0; top:0; right:0; height:2px; z-index:5; pointer-events:none; }
+  html.js .progresso span{ display:block; height:100%; width:100%; background:var(--ouro); transform-origin:0 50%; transform:scaleX(var(--p,.1)); transition:transform .25s ease; }
+  html.js .deck[data-tom="papel"] .progresso span{ background:var(--marinho); }
+  html.js .contador{
+    display:flex; align-items:center; gap:.5em; position:absolute; right:var(--s-margem); bottom:36px; height:40px; z-index:5; pointer-events:none;
+    font:500 var(--s-folio)/1 var(--texto); letter-spacing:.14em; font-variant-numeric:tabular-nums; color:var(--bruma);
+  }
+  html.js .contador b{ font-weight:500; color:var(--branco); }
+  html.js .deck[data-tom="papel"] .contador{ color:var(--pedra); }
+  html.js .deck[data-tom="papel"] .contador b{ color:var(--noite); }
+  html.js .painel-notas{
+    display:flex; flex-direction:column; position:fixed; top:0; right:0; bottom:0; width:380px; z-index:10;
+    background:var(--noite); color:var(--gelo); border-left:2px solid var(--ouro); padding:32px 28px 28px;
+    transform:translateX(100%); visibility:hidden;
+  }
+  html.js.com-notas .painel-notas{ transform:none; visibility:visible; }
+}
+@media screen and (min-width:641px) and (min-height:501px) and (prefers-reduced-motion:reduce){
+  html.js .slide,html.js .slide.ativo,html.js .progresso span{ transition:none; }
+}
+
+/* ---------- 11. Celular (até 640 px de largura, ou deitado, até 500 de altura): slides empilhados, a página rola ---------- */
+@media screen and (max-width:640px), screen and (max-height:500px){
+  body{ background:var(--abismo); }
+  .progresso,.contador,.painel-notas{ display:none!important; }
+  .slide{ display:flex; flex-direction:column; padding:26px var(--gut) 32px; }
+  .s-folio{ margin-bottom:40px; padding-bottom:12px; font-size:11px; gap:4px 16px; flex-wrap:wrap; }
+  .slide:not(.capa):not(.capa-clara) .s-folio > span:first-child{ display:none; }
+  .s-folio-extra{ display:none; }
+  .slide:not(.capa):not(.capa-clara) .s-folio{ justify-content:flex-end; }
+  .s-rodape{ margin-top:44px; padding-top:16px; border-top:1px solid var(--f-linha); }
+  .s-simbolo{ width:32px; }
+  .s-num{ font-size:11px; }
+  .s-rotulo{ font-size:11px; gap:10px; }
+  .losango{ width:7px; height:7px; }
+  .s-titulo{ font-size:32px; line-height:1.08; }
+  .s-apoio{ font-size:17px; line-height:1.55; }
+  .s-legenda{ font-size:13px; }
+  .s-legenda b{ font-size:11px; margin-right:8px; }
+  .s-cab .s-titulo{ margin-top:14px; }
+  .s-cab .s-apoio{ margin-top:12px; }
+  .s-display{ font-size:44px; line-height:1.04; }
+  .s-meta{ grid-template-columns:minmax(0,1fr)!important; }
+  .s-meta > div,.s-meta > div + div{ padding:12px 0; border-left:0; }
+  .s-meta > div + div{ border-top:1px solid var(--f-linha); }
+  .s-meta > .s-meta-linha{ margin-top:0; }
+  .s-meta dt{ font-size:11px; }
+  .s-meta dd{ font-size:15px; }
+  .s-id{ font-size:15px; }
+  .btn{ min-height:52px; padding:14px 22px 13px; font-size:12px; gap:10px; }
+  .btn--avanco::after{ width:18px; height:18px; }
+  .s-prancha > figcaption{ margin-top:12px; }
+  .s-prancha--passe{ padding-top:16px; }
+  .s-prancha--passe .s-prancha-foto{ --passe:14px; }
+  .s-prancha--janela .s-prancha-foto{ --passe:10px; }
+
+  .slide.capa .s-marca,.capa-clara .s-marca{ width:min(100%,300px); }
+  .capa-titulos{ margin-top:48px; }
+  .capa-titulos .s-display{ margin-top:16px; }
+  .capa-titulos .s-apoio{ margin-top:16px; }
+  .capa-titulos .s-meta{ margin-top:28px; }
+  .capa-fio{ display:none; }
+  .capa-prancha{ margin-top:32px; }
+  .capa-prancha .s-prancha-foto{ aspect-ratio:4/5; }
+  .capa-prancha .s-prancha-foto,.citacao-prancha .s-prancha-foto{ max-height:max(440px,80vh); }   /* celular deitado: a foto não passa de uma tela */
+  .capa-clara .s-titulo{ font-size:34px; margin-top:16px; }
+  .capa-clara .s-meta{ margin-top:24px; }
+
+  .secao .s-trama{ left:auto; right:0; top:64px; width:72%; height:230px; }
+  .secao-num{ order:2; font-size:156px; margin:8px 0 0 -6px; align-self:flex-start; }
+  .secao-texto{ order:3; margin-top:24px; }
+  .secao .s-rodape{ order:4; }
+  .secao-titulo{ font-size:40px; margin-top:16px; }
+  .secao-kicker{ font-size:11px; gap:10px; }
+  .secao-kicker::before{ width:32px; }
+  .secao-texto .s-apoio{ margin-top:16px; }
+
+  .s-frase{ font-size:38px; line-height:1.06; }
+  .ideia-frase{ margin-top:4px; }
+  .ideia-frase .s-apoio{ margin-top:20px; }
+  .ideia-frase .s-legenda{ margin-top:16px; }
+  .ideia-forma{ width:150px; align-self:flex-end; margin-top:0; }
+
+  .stat-miolo{ margin-top:24px; }
+  .stat-num{ font-size:clamp(96px,29vw,124px); flex-wrap:wrap; row-gap:4px; }
+  .stat-un{ font-size:.34em; }
+  .stat-lado{ margin-top:24px; }
+  .stat-desc{ font-size:17px; }
+  .stat-conclusao{ font-size:26px; margin-top:20px; padding-top:20px; text-wrap:balance; }
+  .stat-fonte{ margin-top:24px; }
+
+  .grafico-corpo{ margin-top:32px; }
+  .grafico-corpo .grafico-lado{ margin-top:24px; border-left:0; padding-left:0; border-top:1px solid var(--f-linha); padding-top:18px; }
+  .grafico-lado .s-apoio{ font-size:17px; }
+  .grafico-lado .s-legenda{ margin-top:12px; }
+
+  .compara-grade{ display:grid; grid-template-columns:minmax(0,1fr); margin-top:28px; }
+  .compara-lado{ padding:24px 20px 20px; }
+  .compara-veredito::before{ width:16px; height:16px; }
+  .compara-t{ font-size:26px; margin-top:10px; }
+  .compara-lista{ margin-top:14px; }
+  .compara-lista li{ grid-template-columns:20px minmax(0,1fr); gap:12px; padding:12px 0; font-size:16px; }
+  .compara-nao .compara-lista li::before{ width:7px; height:7px; margin:.62em 0 0 5px; }
+  .compara-sim .compara-lista li::before{ width:20px; height:20px; }
+  .compara-seta{ width:44px; height:44px; margin:-4px 0; transform:rotate(90deg); }
+  .compara-seta .ic{ width:28px; height:28px; }
+  .compara-fonte{ margin-top:20px; }
+
+  .citacao-miolo{ margin-top:8px; }
+  .olho{ border-top:0; padding-top:0; }   /* a linha de ouro do fólio já abre a citação */
+  .olho blockquote p{ font-size:30px; line-height:1.18; }
+  .olho figcaption{ margin-top:20px; font-size:11px; gap:10px; }
+  .olho figcaption::before{ width:28px; }
+  .citacao-prancha{ margin-top:32px; }
+  .citacao-prancha .s-prancha-foto{ aspect-ratio:4/5; }
+  .s-prancha--janela .s-prancha-foto::after{ left:-5px; top:-5px; width:9px; height:9px; }
+
+  .passos-visual{ margin-top:32px; }
+  .percurso{ grid-template-columns:minmax(0,1fr); row-gap:28px; padding-left:36px; }
+  .percurso::before{ left:7px; right:auto; top:12px; bottom:12px; width:1px; height:auto; }
+  .etapa{ padding-right:0; }
+  .etapa-n{ font-size:36px; }
+  .etapa-marca{ position:absolute; left:-36px; top:12px; margin:0; width:13px; height:13px; }
+  .etapa-t{ margin-top:10px; font-size:26px; }
+  .etapa-d{ margin-top:8px; font-size:16px; }
+  .passos-fonte{ margin-top:24px; }
+
+  .closer .s-display{ font-size:42px; }
+  .closer-canais{ margin-top:32px; }
+  .closer-contatos dd{ font-size:15px; }
+  .closer-base{ margin-top:40px; flex-direction:column-reverse; align-items:flex-start; gap:28px; }
+  .closer-base .s-marca{ width:min(100%,240px); }
+  .closer .s-rodape{ align-items:flex-start; }
+  .s-aviso{ font-size:13px; }
+}
+@media screen and (max-width:380px){
+  .s-display,.closer .s-display{ font-size:38px; }
+  .s-titulo{ font-size:29px; }
+  .s-frase{ font-size:33px; }
+  .secao-titulo{ font-size:35px; }
+  .olho blockquote p{ font-size:27px; }
+  .stat-num{ font-size:92px; }
+  .stat-conclusao{ font-size:24px; }
+  .capa-clara .s-titulo{ font-size:31px; }
+}
+
+/* ---------- 12. Impressão e PDF: 1440 × 900, um slide por página ---------- */
+@page{ size:1440px 900px; margin:0; }
+@media print{
+  html,body{ background:var(--abismo); margin:0; padding:0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  *{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .palco,.deck{ position:static; transform:none; width:auto; height:auto; }
+  .slide{ position:relative; width:1440px; height:900px; opacity:1!important; visibility:visible!important; transform:none; break-after:page; page-break-after:always; break-inside:avoid; }
+  .deck > section.slide:last-of-type{ break-after:auto; page-break-after:auto; }
+  .progresso,.contador,.painel-notas,aside.notas{ display:none!important; }
+  .s-num{ visibility:visible; }
+  *,*::before,*::after{ transition:none!important; animation:none!important; }
+}
+</style>
+</head>
+<body>
+<div class="palco" id="palco">
+<main class="deck" id="deck" aria-roledescription="apresentação" aria-label="Apresentação da Borelli Advocacia">
+
+  <!-- ===================== 1 · CAPA AZUL NOITE (palestra, aula, evento) ===================== -->
+  <section class="slide capa campo-noite ativo" id="slide-1" data-tom="noite" aria-roledescription="slide" aria-label="1 de 10: Negativa de plano de saúde: o que a regra diz">
+    <div class="s-folio"><span><b>Borelli Advocacia</b><span class="s-folio-extra"> · Palestra</span></span><span>[mês de aaaa]</span></div>
+    <div class="capa-texto">
+      <img class="s-marca" src="assets/borelli-horizontal-ouro.svg" alt="Borelli Advocacia Especializada" width="2589" height="565" fetchpriority="high" decoding="async">
+      <div class="capa-titulos">
+        <p class="s-rotulo"><span class="losango" aria-hidden="true"></span>Palestra · Negativa de plano de saúde</p>
+        <h1 class="s-display">O que a <em>regra</em> diz.</h1>
+        <p class="s-apoio">Prazo, forma e motivo: o que a operadora precisa cumprir quando nega um pedido.</p>
+        <dl class="s-meta">
+          <div><dt>Evento</dt><dd>[nome do evento]</dd></div>
+          <div><dt>Data</dt><dd>[dd/mm/aaaa]</dd></div>
+          <div><dt>Local</dt><dd>[cidade (UF)]</dd></div>
+        </dl>
+      </div>
+    </div>
+    <span class="capa-fio" aria-hidden="true"></span>
+    <figure class="s-prancha capa-prancha">
+      <div class="s-prancha-foto" style="--foco:50% 30%">
+        <img src="assets/fotos/caico-retrato-estudio-2024-b.jpg" alt="Retrato de estúdio de Caico Borelli, de terno azul-marinho, em fundo escuro" width="640" height="640" fetchpriority="high" decoding="async">
+      </div>
+      <figcaption class="s-legenda"><b>Palestrante</b>Caico Borelli&nbsp;· Advogado&nbsp;· <span class="nw">OAB/CE 24.895</span></figcaption>
+    </figure>
+    <aside class="notas">
+      <p>Capa da palestra, da aula ou da apresentação em evento. Use uma das duas capas e apague a outra: esta, em Azul Noite, para o público de um evento; a clara (slide 2) para a conversa de acompanhamento com quem já é cliente.</p>
+      <p>A assinatura em ouro metálico é o único metal deste slide (lei I) e tem 560 px de largura, o mínimo da capa; por isso a capa não leva o símbolo no rodapé. O tema da palestra vai no rótulo e a pergunta que ela responde vai no título, em frase, com um grifo só. Troque o mês no fólio e o evento, a data e a cidade na linha de dados.</p>
+      <p>Quem apresenta aparece na legenda da foto com a identificação completa: nome, a palavra Advogado (ou Advogada) e a OAB/CE, com a mesma fonte, o mesmo tamanho e a mesma cor. A foto é um retrato real em fundo escuro, sem luz colorida; nunca troque por banco de imagem ou por imagem gerada por inteligência artificial.</p>
+      <p>Palestra técnica e informativa é permitida pela OAB (Provimento 205/2021, Anexo Único). O PDF vai para quem participou do evento; nunca para listas nem para quem não pediu (mala direta é vedada).</p>
+      <p>A linha "Advocacia Especializada" da assinatura depende do título que sustenta a palavra (pendência 2). Se ele não for confirmado, troque o arquivo por borelli-horizontal-sem-apoio-ouro.svg.</p>
+    </aside>
+  </section>
+
+  <!-- ===================== 2 · CAPA CLARA (conversa de acompanhamento, documento individual) ===================== -->
+  <section class="slide capa-clara campo-papel" id="slide-2" data-tom="papel" aria-roledescription="slide" aria-label="2 de 10: O seu processo, em português claro">
+    <div class="s-folio"><span><b>Borelli Advocacia</b><span class="s-folio-extra"> · Conversa de acompanhamento</span></span><span>Documento individual</span></div>
+    <div class="capa-texto">
+      <img class="s-marca" src="assets/borelli-horizontal-marinho.svg" alt="Borelli Advocacia Especializada" width="2589" height="565" loading="lazy" decoding="async">
+      <div class="capa-titulos">
+        <p class="s-rotulo"><span class="losango" aria-hidden="true"></span>Conversa de acompanhamento</p>
+        <h1 class="s-titulo">O seu processo, em português <em>claro</em>.</h1>
+        <p class="s-apoio">O que já aconteceu, o que vem agora e o que depende de você, sem juridiquês.</p>
+        <dl class="s-meta">
+          <div><dt>Preparado para</dt><dd>[nome]</dd></div>
+          <div><dt>Conversa em</dt><dd>[dd/mm/aaaa]</dd></div>
+          <div class="s-meta-linha"><dt>Advogado responsável</dt><dd class="s-id"><span>[Nome do advogado]</span><span>Advogado</span><span class="nw">OAB/CE [nº]</span></dd></div>
+        </dl>
+      </div>
+    </div>
+    <figure class="s-prancha s-prancha--passe capa-prancha">
+      <div class="s-prancha-foto" style="--foco:50% 34%">
+        <img src="assets/fotos/caico-retrato-estudio-2024.jpg" alt="Retrato de estúdio de Caico Borelli, de terno escuro e mãos unidas, em fundo escuro" width="600" height="600" loading="lazy" decoding="async">
+      </div>
+      <figcaption class="s-legenda"><b>Na capa</b>Retrato real do advogado responsável, com autorização de imagem por escrito.</figcaption>
+    </figure>
+    <aside class="notas">
+      <p>Capa clara para a conversa de acompanhamento com quem já é cliente, por vídeo ou presencial. Troque o rótulo, o título e o fólio pelo assunto, e ajuste o closer (a nota do slide 10 diz como).</p>
+      <p>No Papel a assinatura é Azul Borelli e o grifo vira marca-texto: o ouro nunca é texto sobre o claro (lei I).</p>
+      <p>O advogado responsável aparece na capa: nome, a palavra Advogado (ou Advogada) e o número da OAB/CE, com a mesma fonte, o mesmo tamanho e a mesma cor. Troque a foto pelo retrato real de quem conduz o caso, com autorização de imagem por escrito.</p>
+      <p>Apresentação com dado do caso ou de saúde vai só para o cliente, por canal seguro; nunca em rede, grupo ou anúncio (sigilo profissional e Lei Geral de Proteção de Dados, a LGPD). Honorários ficam só na proposta individual.</p>
+    </aside>
+  </section>
+
+  <!-- ===================== 3 · ABERTURA DE SEÇÃO ===================== -->
+  <section class="slide secao campo-noite" id="slide-3" data-tom="noite" aria-roledescription="slide" aria-label="3 de 10: O não do plano também tem prazo">
+    <div class="s-folio"><span><b>Borelli Advocacia</b> · Palestra</span><span><b>01</b> · O que diz a norma</span></div>
+    <span class="s-trama" aria-hidden="true"></span>
+    <p class="secao-num" aria-hidden="true">01</p>
+    <div class="secao-texto">
+      <p class="secao-kicker">O que diz a norma</p>
+      <h2 class="secao-titulo">O não do plano também tem <em>prazo</em>.</h2>
+      <p class="s-apoio">Prazo, forma e reanálise: o que a Agência Nacional de Saúde Suplementar (ANS) exige de quem nega um pedido.</p>
+    </div>
+    <div class="s-rodape"><span></span><span class="s-num">03</span></div>
+    <aside class="notas">
+      <p>Abertura de parte. Troque o número (01, 02, 03), o nome da parte no fólio e o título, sempre em frase com um grifo.</p>
+      <p>O numeral é ouro chapado sobre o azul, nunca o degradê metálico, que é só da marca. A trama de losangos entra só em campo azul, no canto vazio, nunca atrás de texto pequeno. Se a abertura for no Papel, troque campo-noite por campo-papel: o numeral fica Azul Borelli e a trama some sozinha.</p>
+      <p>Nada mais entra: o numeral, o título e o espaço fazem a abertura, como numa revista. Por isso não há símbolo no rodapé.</p>
+    </aside>
+  </section>
+
+  <!-- ===================== 4 · IDEIA ÚNICA ===================== -->
+  <section class="slide ideia campo-papel" id="slide-4" data-tom="papel" aria-roledescription="slide" aria-label="4 de 10: Quem nega precisa dizer o porquê">
+    <div class="s-folio"><span><b>Borelli Advocacia</b> · Palestra</span><span><b>01</b> · O que diz a norma</span></div>
+    <p class="s-rotulo s-cab">A ideia central</p>
+    <div class="ideia-frase">
+      <h2 class="s-frase">Quem nega precisa dizer o <em>porquê</em>.</h2>
+      <p class="s-apoio">A negativa vem por escrito, com o motivo e a cláusula do contrato ou a norma que a justifica, mesmo que você não peça.</p>
+      <p class="s-legenda"><b>Fonte</b>ANS, Resolução Normativa 623/2024, art.&nbsp;14.</p>
+    </div>
+    <div class="ideia-forma forma-svg" data-bforms='{"forma":"elo","peca":296,"aria":"Elo: a negativa ligada ao motivo que a justifica"}'></div>
+    <div class="s-rodape"><img class="s-simbolo" src="assets/borelli-simbolo-marinho.svg" alt="" width="612" height="565" loading="lazy" decoding="async"><span class="s-num">04</span></div>
+    <aside class="notas">
+      <p>Slide de ideia única: uma frase, um grifo, uma forma. Fale a frase e pare.</p>
+      <p>A regra é da Resolução Normativa 623/2024 da ANS, art.&nbsp;14, em vigor desde 1º de julho de 2025: a operadora reduz a negativa a termo (põe por escrito) e informa, em linguagem clara, o motivo e a cláusula do contrato ou a norma que a justifica, independentemente de pedido.</p>
+      <p>A forma elo (bforms.js) quer dizer documento e regra: a negativa ligada ao motivo que a sustenta. Uma forma por slide, ao lado do texto, nunca atrás.</p>
+    </aside>
+  </section>
+
+  <!-- ===================== 5 · ESTATÍSTICA ===================== -->
+  <section class="slide stat campo-noite" id="slide-5" data-tom="noite" aria-roledescription="slide" aria-label="5 de 10: 10 dias úteis para responder a um pedido de internação eletiva">
+    <div class="s-folio"><span><b>Borelli Advocacia</b> · Palestra</span><span><b>01</b> · O que diz a norma</span></div>
+    <p class="s-rotulo s-cab"><span class="losango losango--cheio" aria-hidden="true"></span>Um número da norma</p>
+    <div class="stat-miolo">
+      <p class="stat-num"><span>10</span><span class="stat-un">dias úteis</span></p>
+      <div class="stat-lado">
+        <p class="stat-desc">é o prazo máximo para a operadora responder a um pedido de internação eletiva ou de procedimento de alta complexidade.</p>
+        <p class="stat-conclusao">“Em&nbsp;análise” não conta como <em>resposta</em>.</p>
+      </div>
+      <p class="s-legenda stat-fonte"><b>Fonte</b>ANS, Resolução Normativa 623/2024, art.&nbsp;12, inciso&nbsp;II, alínea b, e §&nbsp;5º, em vigor desde 1º de julho de 2025. Prazo contado da data do pedido. Norma conferida em 28/09/2026.</p>
+    </div>
+    <div class="s-rodape"><img class="s-simbolo" src="assets/borelli-simbolo-ouro.svg" alt="" width="612" height="565" loading="lazy" decoding="async"><span class="s-num">05</span></div>
+    <aside class="notas">
+      <p>Um número por slide, com fonte e data na própria tela. É número de norma, conferido no texto oficial da Resolução Normativa 623/2024 da ANS (art.&nbsp;12): 10 dias úteis para responder a pedido de procedimento de alta complexidade ou de internação eletiva; 5 dias úteis nos demais casos; resposta imediata em urgência e emergência. Quando o prazo da Resolução Normativa 566/2022 for menor, vale o dela.</p>
+      <p>O §&nbsp;5º do mesmo artigo não aceita resposta genérica como “em&nbsp;análise”, “em&nbsp;processamento” ou “em&nbsp;auditoria”.</p>
+      <p>Nunca use número de processos, de clientes, de liminares ou taxa de êxito (Provimento 205/2021). Norma muda: confira a versão em vigor no site da ANS antes de apresentar. O símbolo do rodapé é o único metal do slide.</p>
+    </aside>
+  </section>
+
+  <!-- ===================== 6 · GRÁFICO ===================== -->
+  <section class="slide grafico campo-papel" id="slide-6" data-tom="papel" aria-roledescription="slide" aria-label="6 de 10: Do pedido à internação eletiva, o prazo máximo é de 21 dias úteis">
+    <div class="s-folio"><span><b>Borelli Advocacia</b> · Palestra</span><span><b>01</b> · O que diz a norma</span></div>
+    <div class="s-cab">
+      <p class="s-rotulo">Prazos máximos da ANS · em dias úteis</p>
+      <h2 class="s-titulo">Do pedido à internação eletiva, o prazo máximo é de <em class="nw">21 dias úteis</em>.</h2>
+    </div>
+    <div class="grafico-corpo">
+      <div class="grafico-svg" data-bviz='{"tipo":"barras-h","rotulos":["Resposta aos demais pedidos","Resposta da Ouvidoria à reanálise","Resposta ao pedido de internação eletiva","Do pedido à internação eletiva"],"valores":[5,7,10,21],"vrotulos":["5 dias úteis","7 dias úteis","10 dias úteis","21 dias úteis"],"destaque":3,"estilo":"haste","empilhar":true,"aria":"Prazos máximos da ANS em dias úteis: resposta aos demais pedidos, 5; resposta da Ouvidoria à reanálise, 7; resposta ao pedido de internação eletiva, 10; do pedido à internação eletiva, 21."}'></div>
+      <div class="grafico-lado">
+        <p class="s-apoio">A resposta chega antes. O prazo para responder não substitui o prazo para realizar: os dois contam da data do pedido.</p>
+        <p class="s-legenda"><b>Fonte</b>ANS, Resolução Normativa 623/2024, arts.&nbsp;12 e 16, e Resolução Normativa 566/2022, art.&nbsp;3º, inciso&nbsp;XIII. Normas conferidas em 28/09/2026.</p>
+      </div>
+    </div>
+    <div class="s-rodape"><img class="s-simbolo" src="assets/borelli-simbolo-marinho.svg" alt="" width="612" height="565" loading="lazy" decoding="async"><span class="s-num">06</span></div>
+    <aside class="notas">
+      <p>O título do gráfico é a conclusão, não a descrição. Um destaque por gráfico (aqui, o prazo da internação), marcado pelo losango; o resto fica neutro.</p>
+      <p>Os quatro prazos foram conferidos nos textos oficiais: 5 e 10 dias úteis para a resposta (Resolução Normativa 623/2024, art.&nbsp;12, II); até 7 dias úteis para a Ouvidoria responder à reanálise, contados do pedido de reanálise (RN 623, art.&nbsp;16, §&nbsp;1º, III); e 21 dias úteis do pedido até a internação eletiva (Resolução Normativa 566/2022, art.&nbsp;3º, XIII). A resposta e a realização contam da data do pedido e correm juntas: responder no prazo não adia o prazo de realizar (RN 623, art.&nbsp;12, §&nbsp;4º).</p>
+      <p>Troque os valores no atributo data-bviz (motor bviz.js). No palco o desenho é ampliado 1,6 vez para os rótulos lerem a distância; no celular ele usa a largura real. Dado sem fonte oficial entra com a legenda "Dado ilustrativo".</p>
+    </aside>
+  </section>
+
+  <!-- ===================== 7 · ASSIM / NÃO ASSIM ===================== -->
+  <section class="slide compara campo-papel" id="slide-7" data-tom="papel" aria-roledescription="slide" aria-label="7 de 10: A negativa precisa vir por escrito">
+    <div class="s-folio"><span><b>Borelli Advocacia</b> · Palestra</span><span><b>01</b> · O que diz a norma</span></div>
+    <div class="s-cab">
+      <p class="s-rotulo">O que a resposta precisa ter</p>
+      <h2 class="s-titulo">A negativa precisa vir <em class="nw">por escrito</em>.</h2>
+    </div>
+    <div class="compara-grade">
+      <div class="compara-lado compara-nao">
+        <p class="s-rotulo s-rotulo--apoio compara-veredito">Não assim</p>
+        <h3 class="compara-t">Resposta vaga</h3>
+        <ul class="compara-lista">
+          <li>Só “em&nbsp;análise” ou “em&nbsp;auditoria”</li>
+          <li>Negativa só por telefone, sem documento</li>
+          <li>Motivo genérico, sem a cláusula nem a norma</li>
+        </ul>
+      </div>
+      <span class="compara-seta" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+      <div class="compara-lado compara-sim campo-noite">
+        <p class="s-rotulo compara-veredito">Assim</p>
+        <h3 class="compara-t">Negativa por escrito</h3>
+        <ul class="compara-lista">
+          <li>O motivo, explicado em linguagem clara</li>
+          <li>A cláusula do contrato ou a norma que a justifica</li>
+          <li>Documento para imprimir ou baixar, com o caminho da reanálise</li>
+        </ul>
+      </div>
+    </div>
+    <p class="s-legenda compara-fonte"><b>Fonte</b>ANS, Resolução Normativa 623/2024, art.&nbsp;12, §&nbsp;5º, art.&nbsp;14 e art.&nbsp;16.</p>
+    <div class="s-rodape"><img class="s-simbolo" src="assets/borelli-simbolo-marinho.svg" alt="" width="612" height="565" loading="lazy" decoding="async"><span class="s-num">07</span></div>
+    <aside class="notas">
+      <p>Assim e Não assim de documento ou de processo, nunca de pessoa, de cliente ou de colega. Até três linhas por lado.</p>
+      <p>Tudo o que está no lado Assim é exigência da Resolução Normativa 623/2024: nada de resposta genérica (art.&nbsp;12, §&nbsp;5º); negativa posta por escrito, com o motivo e a cláusula ou a norma, sem precisar pedir (art.&nbsp;14); documento que se pode imprimir ou baixar (art.&nbsp;14, §&nbsp;2º); informação sobre a reanálise pela Ouvidoria, com os canais e o prazo (art.&nbsp;16).</p>
+      <p>O lado Não assim descreve a resposta, sem nome de operadora e sem caso real: a peça ensina a regra (lei III).</p>
+    </aside>
+  </section>
+
+  <!-- ===================== 8 · CITAÇÃO ===================== -->
+  <section class="slide citacao campo-noite" id="slide-8" data-tom="noite" aria-roledescription="slide" aria-label="8 de 10: citação do perfil do escritório">
+    <div class="s-folio"><span><b>Borelli Advocacia</b> · Palestra</span><span><b>01</b> · O que diz a norma</span></div>
+    <div class="citacao-miolo">
+      <figure class="olho">
+        <blockquote><p>Toda carta de negativa é escrita com muito cuidado. Cuidado para não dizer o que realmente está dizendo.</p></blockquote>
+        <figcaption>@borelli.advocacia · 4 de setembro de 2026</figcaption>
+      </figure>
+    </div>
+    <figure class="s-prancha s-prancha--janela citacao-prancha">
+      <div class="s-prancha-foto" style="--foco:38% 30%">
+        <img class="foto--natural" src="assets/fotos/caico-palestra-perfil.jpg" alt="Caico Borelli, de perfil, gesticula enquanto fala ao microfone em uma palestra" width="640" height="1136" loading="lazy" decoding="async">
+      </div>
+      <figcaption class="s-legenda"><b>Em palestra</b>Caico Borelli, fundador da Borelli Advocacia.</figcaption>
+    </figure>
+    <div class="s-rodape"><img class="s-simbolo" src="assets/borelli-simbolo-ouro.svg" alt="" width="612" height="565" loading="lazy" decoding="async"><span class="s-num">08</span></div>
+    <aside class="notas">
+      <p>Olho de revista: só frase real e pública, com o crédito certo, até quatro linhas no palco. Esta é de um carrossel do perfil do escritório (@borelli.advocacia, 4 de setembro de 2026).</p>
+      <p>Depoimento, caso ou frase de cliente não entra, nem com autorização (Provimento 205/2021). A foto é real e fica na janela: retângulo com a linha fina a 12 px da imagem e o losango num canto. Ela recebe a classe foto--natural, que tira o excesso de cor da luz do evento. O símbolo do rodapé é o único metal do slide.</p>
+    </aside>
+  </section>
+
+  <!-- ===================== 9 · PASSOS ===================== -->
+  <section class="slide passos campo-papel" id="slide-9" data-tom="papel" aria-roledescription="slide" aria-label="9 de 10: Cada etapa deixa um registro">
+    <div class="s-folio"><span><b>Borelli Advocacia</b> · Palestra</span><span><b>01</b> · O que diz a norma</span></div>
+    <div class="s-cab">
+      <p class="s-rotulo">O caminho de um pedido</p>
+      <h2 class="s-titulo">Cada etapa deixa um <em>registro</em>.</h2>
+      <p class="s-apoio">Do pedido à reanálise, o que a norma exige em cada passo.</p>
+    </div>
+    <div class="passos-visual">
+      <ol class="percurso">
+        <li class="etapa">
+          <span class="etapa-n">01</span>
+          <span class="etapa-marca" aria-hidden="true"></span>
+          <h3 class="etapa-t">Pedido</h3>
+          <p class="etapa-d">O pedido do médico assistente chega à operadora, com protocolo desde o início.</p>
+        </li>
+        <li class="etapa">
+          <span class="etapa-n">02</span>
+          <span class="etapa-marca" aria-hidden="true"></span>
+          <h3 class="etapa-t">Resposta</h3>
+          <p class="etapa-d">Em até 10 dias úteis na internação eletiva: autorização ou negativa, nunca “em&nbsp;análise”.</p>
+        </li>
+        <li class="etapa etapa--agora">
+          <span class="etapa-n">03</span>
+          <span class="etapa-marca" aria-hidden="true"></span>
+          <h3 class="etapa-t">Negativa</h3>
+          <p class="etapa-d">Por escrito, com o motivo, a cláusula ou a norma e o caminho da reanálise.</p>
+        </li>
+        <li class="etapa">
+          <span class="etapa-n">04</span>
+          <span class="etapa-marca" aria-hidden="true"></span>
+          <h3 class="etapa-t">Reanálise</h3>
+          <p class="etapa-d">A Ouvidoria da operadora reavalia o pedido, em prazo que não passa de 7 dias úteis.</p>
+        </li>
+      </ol>
+    </div>
+    <p class="s-legenda passos-fonte"><b>Fonte</b>ANS, Resolução Normativa 623/2024, arts.&nbsp;10, 12, 14 e 16. Norma conferida em 28/09/2026.</p>
+    <div class="s-rodape"><img class="s-simbolo" src="assets/borelli-simbolo-marinho.svg" alt="" width="612" height="565" loading="lazy" decoding="async"><span class="s-num">09</span></div>
+    <aside class="notas">
+      <p>O caminho de um pedido em quatro etapas, com a regra de cada uma (Resolução Normativa 623/2024 da ANS): protocolo como primeira ação do atendimento (art.&nbsp;10); resposta em até 10 dias úteis na internação eletiva e em até 5 nos demais casos (art.&nbsp;12); negativa por escrito, com o motivo e a cláusula ou a norma (art.&nbsp;14); reanálise pela Ouvidoria, com prazo informado de até 7 dias úteis (art.&nbsp;16).</p>
+      <p>O losango cheio marca a etapa em que está a maior parte de quem assiste: a negativa. É o único losango cheio do slide.</p>
+      <p>Se a operadora chamar junta médica, a comunicação segue a Resolução Normativa 424/2017 (RN 623, art.&nbsp;12, §&nbsp;3º). Nenhum prazo de processo judicial, nenhuma promessa de resultado.</p>
+    </aside>
+  </section>
+
+  <!-- ===================== 10 · CLOSER ===================== -->
+  <section class="slide closer campo-noite" id="slide-10" data-tom="noite" aria-roledescription="slide" aria-label="10 de 10: Obrigado. Peça tudo por escrito">
+    <div class="s-folio"><span><b>Borelli Advocacia</b> · Palestra</span><span>Contato</span></div>
+    <div class="closer-texto">
+      <h2 class="s-display">Obrigado.<br> Peça tudo <em class="nw">por escrito</em>.</h2>
+    </div>
+    <div class="closer-canais">
+      <p class="s-rotulo canais-rotulo"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>Canais oficiais da Borelli Advocacia</p>
+      <dl class="s-meta closer-contatos">
+        <div><dt>WhatsApp</dt><dd class="nw">(85) [número oficial]</dd></div>
+        <div><dt>Site</dt><dd>advborelli.com.br</dd></div>
+        <div><dt>E-mail</dt><dd>atendimento@advborelli.com.br</dd></div>
+        <div><dt>Instagram</dt><dd>@borelli.advocacia</dd></div>
+      </dl>
+      <p class="s-legenda closer-golpe">Recebeu mensagem de outro número em nome do escritório? Não responda e confirme por um destes canais.</p>
+    </div>
+    <div class="closer-base">
+      <p class="s-id s-id--linhas"><span>Caico Borelli Sociedade Individual de Advocacia</span><span>Registro OAB/CE [nº]</span><span>Responsável: Caico Borelli · <span class="nw">OAB/CE 24.895</span></span></p>
+      <img class="s-marca" src="assets/borelli-horizontal-ouro.svg" alt="Borelli Advocacia Especializada" width="2589" height="565" loading="lazy" decoding="async">
+    </div>
+    <div class="s-rodape"><p class="s-aviso">Conteúdo informativo. Não constitui promessa de resultado, prazo ou valor. Cada caso é analisado individualmente.</p><span class="s-num">10</span></div>
+    <aside class="notas">
+      <p>Fechamento: o agradecimento e o recado principal da palestra, no título: pedir tudo por escrito (a negativa, a resposta, o número do protocolo). Quando quem apresenta for mulher, o título começa com “Obrigada.”.</p>
+      <p>Os canais aparecem como informação (nível 2 das chamadas), sem convite a contratar. Troque “(85) [número oficial]” pelo WhatsApp oficial quando ele for definido (pendência 5). Em entrevista ou programa de TV, rádio ou jornal, deixe só site, e-mail e Instagram: a leitura conservadora do Código de Ética da OAB (art.&nbsp;40, V) tira telefone e endereço da imprensa.</p>
+      <p>A identificação da sociedade é obrigatória quando a apresentação sai do evento (PDF, WhatsApp, e-mail, impresso): nunca apague este slide. Mesma fonte, mesmo tamanho e mesma cor em todos os itens, em 26 px no palco, o piso da casa para o bloco da OAB; se quem apresenta for outro advogado, acrescente a linha dele (nome · Advogado ou Advogada · OAB/CE nº). O registro da sociedade fica entre colchetes até o escritório confirmar (pendência 3). O aviso de publicidade fica no rodapé.</p>
+      <p>Nas perguntas, responda a regra, nunca o caso concreto de alguém da plateia (sigilo e captação). Na conversa de acompanhamento (capa clara), troque o título por “Obrigado. Até a próxima conversa.”, com o grifo em “conversa”, e acrescente, depois dos canais, o botão “Envie seus documentos por aqui” (nível 3), com a classe btn btn--cheio btn--avanco, levando ao canal oficial de atendimento.</p>
+    </aside>
+  </section>
+
+  <div class="progresso" aria-hidden="true"><span></span></div>
+  <p class="contador" aria-live="polite"><b id="c-atual">01</b><span aria-hidden="true">/</span><span id="c-total">10</span></p>
+</main>
+</div>
+
+<aside class="painel-notas" id="painel-notas" aria-label="Notas do apresentador">
+  <div class="painel-cab">
+    <span class="rotulo-painel">Notas do apresentador</span>
+    <span class="painel-num" id="p-num">01<span> / 10</span></span>
+  </div>
+  <p class="painel-tit" id="p-tit"></p>
+  <div class="painel-txt" id="p-txt"></div>
+  <p class="painel-prox" id="p-prox"></p>
+  <p class="painel-teclas"><kbd>P</kbd> fecha as notas · <kbd>F</kbd> tela cheia · setas mudam o slide</p>
+</aside>
+
+<script src="bviz.js"></script>
+<script src="bforms.js"></script>
+<script>
+/* =====================================================================
+   NAVEGAÇÃO DO DECK · Grifo Nosso v1
+   ===================================================================== */
+(function(){
+  try {
+  var raiz = document.documentElement;
+  var deck = document.getElementById('deck');
+  var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+  var total = slides.length, atual = 0;
+  var barra = deck.querySelector('.progresso span');
+  var cAtual = document.getElementById('c-atual');
+  var pNum = document.getElementById('p-num'), pTit = document.getElementById('p-tit');
+  var pTxt = document.getElementById('p-txt'), pProx = document.getElementById('p-prox');
+  var dois = function(n){ return (n < 10 ? '0' : '') + n; };
+  document.getElementById('c-total').textContent = dois(total);
+  var celular = function(){ return window.matchMedia('(max-width:640px), (max-height:500px)').matches; };
+
+  /* Título do slide para o painel de notas: o rótulo acessível sem o número */
+  var tituloDe = function(s){ return (s.getAttribute('aria-label') || '').replace(/^\d+ de \d+:\s*/, ''); };
+
+  /* ---------- escala do palco: k = min(largura / 1440, altura / 900) ---------- */
+  function escalar(){
+    var palco = document.getElementById('palco');
+    var w = palco.clientWidth, h = palco.clientHeight;
+    if (!w || !h) return;
+    deck.style.setProperty('--k', Math.min(w / 1440, h / 900).toFixed(4));
+  }
+
+  /* ---------- mostrar um slide ---------- */
+  function mostrar(n, semHash){
+    atual = Math.max(0, Math.min(total - 1, n));
+    slides.forEach(function(s, i){
+      var ativo = i === atual;
+      s.classList.toggle('ativo', ativo);
+      if (!celular() && !ativo) s.setAttribute('aria-hidden', 'true'); else s.removeAttribute('aria-hidden');
+    });
+    var s = slides[atual];
+    deck.setAttribute('data-tom', s.getAttribute('data-tom') || 'papel');
+    if (barra) barra.style.setProperty('--p', ((atual + 1) / total).toFixed(4));
+    cAtual.textContent = dois(atual + 1);
+    pNum.innerHTML = dois(atual + 1) + '<span> / ' + dois(total) + '</span>';
+    pTit.textContent = tituloDe(s);
+    var nota = s.querySelector('aside.notas');
+    pTxt.innerHTML = nota ? nota.innerHTML : '<p>Sem notas para este slide.</p>';
+    pProx.innerHTML = atual < total - 1 ? '<b>Próximo:</b> ' + tituloDe(slides[atual + 1]) : '<b>Fim da apresentação.</b>';
+    if (!semHash) { try { history.replaceState(null, '', '#' + (atual + 1)); } catch (e) {} }
+  }
+  /* só número vale como endereço de slide (#3); qualquer outra âncora é ignorada */
+  var lerHash = function(){ var h = (location.hash || '').replace('#', ''); return /^\d+$/.test(h) ? parseInt(h, 10) - 1 : null; };
+
+  /* ---------- teclado ---------- */
+  document.addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var alvo = e.target && e.target.tagName;
+    if (alvo === 'INPUT' || alvo === 'TEXTAREA' || alvo === 'SELECT') return;
+    var k = e.key;
+    if (k === 'p' || k === 'P') { raiz.classList.toggle('com-notas'); escalar(); return; }
+    if (k === 'f' || k === 'F') {
+      try {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (raiz.requestFullscreen) { var r = raiz.requestFullscreen(); if (r && r.catch) r.catch(function(){}); }
+      } catch (err) {}
+      return;
+    }
+    if (celular()) return;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || (k === ' ' && !e.shiftKey)) { e.preventDefault(); mostrar(atual + 1); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || (k === ' ' && e.shiftKey)) { e.preventDefault(); mostrar(atual - 1); }
+    else if (k === 'Home') { e.preventDefault(); mostrar(0); }
+    else if (k === 'End') { e.preventDefault(); mostrar(total - 1); }
+  });
+
+  /* ---------- clique no palco: terço esquerdo volta, o resto avança ---------- */
+  document.getElementById('palco').addEventListener('click', function(e){
+    if (celular() || e.target.closest('a,button')) return;
+    mostrar(atual + (e.clientX < window.innerWidth / 3 ? -1 : 1));
+  });
+
+  /* ---------- link ainda sem destino oficial (WhatsApp pendente): não sai do slide ---------- */
+  deck.addEventListener('click', function(e){
+    var a = e.target.closest('a[data-link-pendente]');
+    if (a) e.preventDefault();
+  });
+
+  /* ---------- toque: deslize horizontal acima de 40 px ---------- */
+  var x0 = null, y0 = null;
+  document.addEventListener('touchstart', function(e){ if (e.touches.length === 1) { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; } }, { passive:true });
+  document.addEventListener('touchend', function(e){
+    if (x0 === null || celular()) { x0 = null; return; }
+    var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) mostrar(atual + (dx < 0 ? 1 : -1));
+    x0 = null;
+  }, { passive:true });
+
+  /* fora do intervalo (#0, #99): mostra o slide mais próximo e corrige o endereço */
+  window.addEventListener('hashchange', function(){ var n = lerHash(); if (n !== null) mostrar(n, n >= 0 && n < total); });
+
+  /* =====================================================================
+     GRÁFICOS (bviz.js, pelo atributo data-bviz)
+     No palco o desenho é feito mais estreito e ampliado 1,6 vez, para os rótulos
+     lerem a distância (o rótulo de 11 unidades sai com cerca de 18 px no slide).
+     No celular o motor usa a largura real. Este script roda antes do motor
+     montar: ele só acrescenta a largura ao atributo, e refaz ao trocar de modo.
+     ===================================================================== */
+  var AMPLIA = 1.6;
+  var graficos = Array.prototype.slice.call(deck.querySelectorAll('[data-bviz]'));
+  graficos.forEach(function(el){ try { el.__base = JSON.parse(el.getAttribute('data-bviz')); } catch (err) { el.__base = null; console.error('deck: data-bviz não é JSON válido', el); } });
+  function cfgPara(el){
+    var c = Object.assign({}, el.__base);
+    if (!celular()) { var w = el.clientWidth; if (w) c.largura = Math.round(w / AMPLIA); }
+    return c;
+  }
+  graficos.forEach(function(el){ if (el.__base) el.setAttribute('data-bviz', JSON.stringify(cfgPara(el))); });
+  function refazGraficos(){
+    if (!window.bviz) return;
+    graficos.forEach(function(el){ if (el.__base) window.bviz.render(el, el.__base.tipo, cfgPara(el)); });
+  }
+
+  /* ---------- início ---------- */
+  var modo = celular() ? 'celular' : 'palco';
+  function ajustar(){
+    escalar();
+    var m = celular() ? 'celular' : 'palco';
+    if (m !== modo) { modo = m; refazGraficos(); mostrar(atual, true); }
+  }
+  var inicial = lerHash();
+  mostrar(inicial === null ? 0 : inicial, inicial === null || (inicial >= 0 && inicial < total));
+  escalar();
+  /* no celular, o endereço #N rola até o slide N */
+  if (inicial !== null && celular() && slides[atual]) { try { slides[atual].scrollIntoView(); } catch (err) {} }
+  var espera = 0;
+  window.addEventListener('resize', function(){ clearTimeout(espera); espera = setTimeout(ajustar, 80); });
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(function(){ clearTimeout(espera); espera = setTimeout(ajustar, 80); }).observe(document.getElementById('palco'));
+  } catch (e) { console.error('deck', e); }
+})();
+</script>
+</body>
+</html>
